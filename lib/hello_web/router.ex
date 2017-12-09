@@ -18,11 +18,11 @@ defmodule HelloWeb.Router do
 
     get "/", PageController, :index
 
-    get "/register", PageController, :register
+    #get "/register", PageController, :register
 
-    get "/subscribe", PageController, :subscribe
+    #get "/subscribe", PageController, :subscribe
 
-    get "tweet_subscribers", PageController, :tweet_subscribers
+    #get "/tweet_subscribers", PageController, :tweet_subscribers
 
     #get "/paajiRohit", PageController, :paajiRohit
   end

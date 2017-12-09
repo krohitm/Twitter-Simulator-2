@@ -3,6 +3,7 @@ defmodule HelloWeb.UserSocket do
 
   ## Channels
    channel "room:*", HelloWeb.RoomChannel
+   channel "check:*", HelloWeb.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
@@ -21,6 +22,7 @@ defmodule HelloWeb.UserSocket do
   # performing token verification on connect.
   def connect(_params, socket) do
     {:ok, socket}
+    #{:ok, assign(socket, :user_id, _params["user_id"])}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -33,5 +35,8 @@ defmodule HelloWeb.UserSocket do
   #     HelloWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+  def id(socket) do 
+    #"user_socket:#{socket.assigns.user_id}"
+    nil
+  end
 end
