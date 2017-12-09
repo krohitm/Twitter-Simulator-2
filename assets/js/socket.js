@@ -1,28 +1,28 @@
 // NOTE: The contents of this file will only be executed if
 // you uncomment its entry in "assets/js/app.js".
 
-// To use Phoenix channels, the first step is to import Socket
+// To use Phoenix channelsList, the first step is to import Socket
 // and connect at the socket path in "lib/web/endpoint.ex":
 import {Socket} from "phoenix"
 
 //let socket = new Socket("/socket", {params: {token: window.userToken}})
 
 var numClients
-var channels = []
-var sockets = []
-let maxClients = 10
+var channelsList = []
+var socketsList = []
+let maxClients = 3
 let userFollowers = {}
-let userNames = []
+let userNamesList = []
 let userName
 for (numClients = 0; numClients < maxClients; numClients++){
   userName = "user_"+numClients
   let socket = new Socket("/socket", {params: {token: window.userToken, userName: userName}})
-  userNames[numClients] = userName
+  userNamesList[numClients] = userName
   userFollowers[userName] = []
   socket.connect()
-  sockets[numClients] = socket
+  socketsList[numClients] = socket
   let channel = socket.channel("room:lobby", {})
-  channels[numClients] = channel
+  channelsList[numClients] = channel
 
   //join the new client
   channel.join()
@@ -41,50 +41,67 @@ for (numClients = 0; numClients < maxClients; numClients++){
   if (numSubscribers == 0){
     numSubscribers = 1
   }
-  subscribersList = getRandom(userNames, numSubscribers)
-  channels[numClients].push("subscribe", subscribersList)
+  subscribersList = getRandom(userNamesList, numSubscribers)
+  channelsList[numClients].push("subscribe", subscribersList)
   .receive("subscribed", resp => console.log("subscribed", resp))
 }
 
 /**function to send tweets */
 function sendTweet(minInterval){
   console.log("sending tweets")
-  var numUsers = userNames.length
-  var mention, tweetText, numSubscribers
+  var numUsers = userNamesList.length
+  var mention, tweetText, numSubscribers, interval
 
   for (var i = 0; i < numUsers; i++){
-    mention = getRandom(userNames, 1)
+    mention = getRandom(userNamesList, 1)
     tweetText = "tweet@"+mention+getHashtag()
-    numSubscribers = userFollowers[userNames[i]].len
+    console.log(tweetText)
+    numSubscribers = userFollowers[userNamesList[i]].len
     interval = Math.floor(maxClients/numSubscribers) * minInterval
 
-    channels[numClients].push("tweet_subscribers", tweetText, )
+    channelsList[i].push("tweet_subscribers", {tweetText: tweetText, 
+      username: userNamesList[i], time: `${Date()}`})
   }
-  
-  //var interval = minumUsers/
 }
-/** @doc """
-  If action is :tweet_subscribers, the clients send tweets
-  If action is :complete_simulation, the clients send tweets,
-  search for tweets, search for hashtags, and search for mentions, randomly
-  """
-  def sendTweet(actorsPid, minInterval, action) do
-    IO.puts "sending tweets"
-    numUsers = length(actorsPid)
-    Enum.each(actorsPid, fn(client) ->
-      mention = selectRandomMention(actorsPid, client)
-                |> Simulator.getUsername
-      tweetText = "tweet@"<>mention<>getHashtag()
-      
-      [{_, _, subscribers}] = :ets.lookup(:usersSimulator, client)
-      numSubscribers = length(subscribers)
-      interval = (numUsers/numSubscribers |> round) * minInterval
 
-      userName = Simulator.getUsername(client)
-      send client, {action, tweetText, userName, client, interval}
-      #GenServer.cast(client, {:tweet_subscribers, tweetText, userName})
-    end)
-  end */
+//setInterval(sendTweet(10), 6000)
+//sendTweet(10)
+
+var check = 0
+function simulation(){
+  while (check <= 2){
+    for (var i = 0; i < userNamesList.len; i++){
+      setInterval(sendTweet(10), 2)
+      var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"])
+      switch (runBehavior){
+        case("search"):
+        console.log(searching)
+        channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})
+        break
+        case("search_hashtag"):
+        console.log("searching for hashtag")
+        hashtagList = [getHashtag]
+        channelsList[i].push("search_hashtag", {username: userNamesList[i], hashtagList, time: `${Date()}`})
+        break
+        case("search_mentions"):
+        console.log("searching for mentions")
+        channelsList[i].push("search_mentions", {username: userNamesList[i], time: `${Date()}`})
+        break
+        case("retweet"):
+        console.log("retweeting")
+        hashtagList = [getHashtag]
+        channelsList[i].push("retweet", {username: userNamesList[i], time: `${Date()}`})
+        break
+        default:
+        break
+      }
+    }
+    check += 1
+  }
+}
+
+simulation()
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,4 +134,4 @@ function getHashtag(){
   return hashList[Math.floor(Math.random() * hashList.length)]
 }
 
-export default sockets
+export default socketsList

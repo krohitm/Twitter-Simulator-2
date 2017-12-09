@@ -28,14 +28,28 @@ defmodule HelloWeb.RoomChannel do
        {:reply, :subscribed, socket} 
     end
 
-    def handle_in("new_message", _payload, socket) do
+    def handle_in("tweet_subscribers", tweet, socket) do
         #IO.inspect ["subscribed", _message, socket]
-        IO.puts "i subscribed"
-        {:reply, :subscribed, socket} 
+        #push "user_socket:#{subscriber}", "new_message", %{id: 1, content: "hello"}
+        #IO.inspect "user_socket:#{subscriber}"
+        #HelloWeb.Endpoint.broadcast("user_socket:#{subscriber}", "new_message", %{})
+        IO.inspect tweet
+        {:noreply, socket}
     end
 
-    #def handle_in("new_msg", %{"body" => body}, socket) do
-    #    broadcast! socket, "new_msg", %{body: body}
-    #    {:noreply, socket}
-    #end
+    def handle_in("search", params, socket) do
+        {:noreply, socket}
+    end
+
+    def handle_in("search_hashtag", params, socket) do
+        {:noreply, socket}
+    end
+
+    def handle_in("search_mentions", params, socket) do
+        {:noreply, socket}
+    end
+
+    def handle_in("retweet", params, socket) do
+        {:noreply, socket}
+    end
 end
