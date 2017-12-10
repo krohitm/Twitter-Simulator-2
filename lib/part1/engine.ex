@@ -49,6 +49,7 @@ defmodule Engine do
   #userName is client's socket
   def register(clientPid, userName) do
     :ets.insert_new(:users, {clientPid, userName, []})
+    # IO.inspect ["Engine prints ===", :ets.member(:userPid, userName), clientPid]
     :ets.insert_new(:userPid, {userName, clientPid})
     :ets.insert_new(:loggedInUsers, {clientPid, :true})
   end

@@ -9,11 +9,12 @@ defmodule Server do
   end
 
   def init(args) do
-    indicator_r = 0
-    indicator_w = 0
+    indicator_r = 0 # For the ReadActor
+    indicator_w = 0 # For the WriteActor
+    indicator_s = 0 # This is for the TweetActors
     sequenceNum = 0
     request_hitcount = 0
-    state = {:running, indicator_r, indicator_w, sequenceNum, request_hitcount}
+    state = {:running, indicator_r, indicator_w, indicator_s, sequenceNum, request_hitcount}
 
    Enum.each(0..1000, fn(index)->
      actorName = "readActor"<>Integer.to_string(index) |> String.to_atom()
@@ -29,7 +30,6 @@ defmodule Server do
    GenServer.start(WriteTweet, :running, name: :writeActor2)
    {:ok, state}
  end
-
   # Below Won't be used in the current implementation
   def handle_call(:start, from, state) do
     # ServerApi.startNode()
@@ -39,18 +39,19 @@ defmodule Server do
   # handle call for registering a new process,
   # needs to be handle call only since can't tweet until registered
   def handle_call({:register, userName, socket}, clientPid, state) do
-    # Engine.register(clientPid |> elem(0), userName)
-    Engine.register(socket, userName)
+    Engine.register(clientPid |> elem(0), userName)
+    # Engine.register(clientPid, userName)
     IO.inspect "registered user"
     {:reply, :registered, state}
   end
   # handle_cast to subscribe user/client to another user/client
-  def handle_call({:subscribe, usersToSub, socket}, clientPid, state) do
+  def handle_call({:subscribe, usersToSub, uName}, clientPid, state) do
     {clientPid, _} = clientPid
+    # socket = Engine.getPid(uName)
     # usersToSub is a list of pid's
     usersToSub |> Enum.each(fn(userName)->
       userPid = Engine.getPid(userName) #userPid is a socket
-      Engine.subscribe(socket, userPid)
+      Engine.subscribe(clientPid, userPid)
     end)
     {:reply, {:subscribed}, state}
   end
@@ -68,10 +69,10 @@ defmodule Server do
   #-----------------------------------------------------------------------------
   # Write and send tweets to subscribers
    def handle_cast({:tweet_subscribers, tweet_time, tweetText, userName, event}, state) do
-     clientId = Engine.getPid(userName) #clientPid is a socket
+     clientId = Engine.getPid(userName) #clientPid is a pid not socket
      state = ServerApi.tweetSubscribers(clientId, tweet_time, tweetText, state, event)
      state = ServerApi.write(state, clientId, tweetText)
-     #DO NOT ucomment, already handled in tweetActor -> ServerApi.tweetMentions(tweetText)
+     #DO NOT uncomment, already handled in tweetActor -> ServerApi.tweetMentions(tweetText)
      {:noreply, state}
    end
    #-----------------------------------------------------------------------------

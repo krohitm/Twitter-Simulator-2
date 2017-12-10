@@ -18,15 +18,13 @@ defmodule HelloWeb.Router do
 
     get "/", PageController, :index
 
-<<<<<<< Updated upstream
     #get "/register", PageController, :register
 
     #get "/subscribe", PageController, :subscribe
 
     #get "/tweet_subscribers", PageController, :tweet_subscribers
 
-=======
->>>>>>> Stashed changes
+
     #get "/paajiRohit", PageController, :paajiRohit
   end
 

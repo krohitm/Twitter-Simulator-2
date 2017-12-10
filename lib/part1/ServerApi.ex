@@ -31,9 +31,8 @@ defmodule ServerApi do
     end
 
     indicator = rem((indicator + 1), 1000)
-    actorToCall = "tweetActor"<>Integer.to_string(indicator_r) |> String.to_atom()
-
-    GenServer.cast(actorToCall, {:tweet_subscribers, userPid, tweet_time, tweetText, event}) #userPid is a socket
+    actorToCall = "tweetActor"<>Integer.to_string(indicator) |> String.to_atom()
+    GenServer.cast(actorToCall, {:tweet_subscribers, userPid, tweet_time, tweetText, event}) #userPid is a pid of channel
     state = {:running, indicator_r,indicator_w, indicator, sequenceNum, request_hitcount+1}
   end
 

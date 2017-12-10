@@ -10,13 +10,15 @@ defmodule TweetActors do
   Also sends the tweet to the mentions inside a tweet
   """
   def handle_cast({:tweet_subscribers, userPid, tweet_time, tweetText, event}, state) do
-    userPid # userPid is a socket
+    userPid # userPid is a pid of socket channel
     |> Engine.getFollowers()
     |> Enum.filter(fn(pid) ->
         Engine.isLoggedIn(pid) == true
       end)
     |> Enum.each(fn(pid) ->
-      push pid, event, tweetText
+      IO.inspect ["======PID TWEET ACTR", Process.alive?(pid)]
+      # GenServer.cast(pid, {%{"tweetText" => tweetText}, :info})
+      send pid, %{"tweetText" => tweetText}
     end)
 
     tweetText
@@ -25,7 +27,7 @@ defmodule TweetActors do
       pid = Engine.getPid(userName)
       cond do
         Engine.isLoggedIn(pid) == true ->
-          push pid, event, tweetText
+          send pid, %{"tweetText" => tweetText}
           # GenServer.cast(pid, {:receiveTweet, tweetText})
         true -> true
       end
