@@ -17,6 +17,9 @@ let userName
 let messageContainer = document.querySelector('#messages')
 var clientsProcessed = 0
 
+
+register()
+
 function register(){
   for (numClients = 0; numClients < maxClients; numClients++){
     userName = "user_"+numClients
@@ -54,8 +57,6 @@ function register(){
     })
   }
 }
-
-register()
 
 //give subscribers to each client
 function subscribe() {
@@ -101,29 +102,12 @@ function subscribe() {
    }
  }
 
-// setTimeout(() => {
-//   console.log("sending tweets")
-//   var numUsers = userNamesList.length
-//   var mention, tweetText, numSubscribers, interval
-
-//   for (var i = 0; i < numUsers; i++){
-//     mention = getRandom(userNamesList, 1)
-//     tweetText = "tweet@"+mention+getHashtag()
-//     console.log(tweetText)
-//     numSubscribers = userFollowers[userNamesList[i]].len
-//     // interval = Math.floor(maxClients/numSubscribers) * minInterval
-
-//     channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
-//       username: userNamesList[i], time: `${Date()}`})
-//   }
-// }, 5000)
-
 
 var check = 0
 function simulation(){
   while (check <= 1){
     for (var i = 0; i < userNamesList.length; i++){
-      sendTweet(10), 2
+      sendTweet(10)
       //console.log("checking behavior")
       var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
       switch (runBehavior[0]){
@@ -176,6 +160,29 @@ for (let channel of channelsList){
   })
 }
 
+for (let channel of channelsList){
+  channel.on("search_result", payload => {
+    let messageItem = document.createElement("li");
+    messageItem.innerText = `search result: [${Date()}] ${payload.searched_tweet}`
+    messageContainer.appendChild(messageItem)
+  })
+}
+
+for (let channel of channelsList){
+  channel.on("search_hashtag", payload => {
+    let messageItem = document.createElement("li");
+    messageItem.innerText = `search result: [${Date()}] ${payload.searched_hashtag}`
+    messageContainer.appendChild(messageItem)
+  })
+}
+
+for (let channel of channelsList){
+  channel.on("search_mentions", payload => {
+    let messageItem = document.createElement("li");
+    messageItem.innerText = `search result: [${Date()}] ${payload.search_mentions}`
+    messageContainer.appendChild(messageItem)
+  })
+}
 /*channelsList[0].on("tweet_sub", payload => {
   let messageItem = document.createElement("li");
   messageItem.innerText = `[${Date()}] ${payload.tweetText}`//'[${Date()}] ${payload.body}'
