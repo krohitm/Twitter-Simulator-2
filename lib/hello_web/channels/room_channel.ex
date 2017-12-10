@@ -13,6 +13,7 @@ defmodule HelloWeb.RoomChannel do
     #handle to register clients
     def handle_in("register", userName, socket) do
         GenServer.call(:server, {:register, userName, socket})
+        push socket, "registered",  %{"userName" => userName}
         {:reply, :registered, socket}
     end
 
@@ -22,6 +23,7 @@ defmodule HelloWeb.RoomChannel do
        usersToSub = payload["usersToSub"] # A list of usernames
        IO.inspect ["subscribed", usersToSub]
        GenServer.call(:server, {:subscribe, usersToSub, userName})
+       push socket, "subscribed",  %{"userName" => userName}
        {:reply, :subscribed, socket}
     end
 
@@ -66,7 +68,7 @@ defmodule HelloWeb.RoomChannel do
     # def handle_in("register", %{"body" => body}, socket) do
     #
     #   GenServer.call(:server, {:register, userName, socket})
-    #   {:noreply, socket}
+       {:noreply, socket}
     end
 
     def handle_in("new_msg",payload, socket) do
