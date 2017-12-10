@@ -33,7 +33,8 @@ defmodule HelloWeb.RoomChannel do
         #push "user_socket:#{subscriber}", "new_message", %{id: 1, content: "hello"}
         #IO.inspect "user_socket:#{subscriber}"
         #HelloWeb.Endpoint.broadcast("user_socket:#{subscriber}", "new_message", %{})
-        IO.inspect tweet
+        #IO.inspect tweet
+        push socket, "tweet_receiver", tweet
         {:noreply, socket}
     end
 
