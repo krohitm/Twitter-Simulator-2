@@ -10,7 +10,7 @@ import {Socket} from "phoenix"
 var numClients
 var channelsList = []
 var socketsList = []
-let maxClients = 100
+let maxClients = 1000
 let userFollowers = {}
 let userNamesList = []
 let userName
@@ -115,10 +115,13 @@ function simulation(){
   console.log("simulation started")
   while (check <= 3){
     for (var i = 0; i < userNamesList.length; i++){
-      sendTweet(10, i)
+      //sendTweet(10, i)
       //console.log("checking behavior")
-      var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
+      var runBehavior = getRandom(["send_tweet","search", "search_hashtag", "search_mentions", "retweet"], 1)
       switch (runBehavior[0]){
+        case("send_tweet"):
+        console.log("sending tweet", userNamesList[i])
+        sendTweet(10, i)
         case("search"):
         console.log("searching", userNamesList[i])
         channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})

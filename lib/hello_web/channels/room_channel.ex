@@ -2,8 +2,6 @@ defmodule HelloWeb.RoomChannel do
     use Phoenix.Channel
 
     def join("room:lobby", _message, socket) do
-        #IO.inspect ["joined", socket]
-        #IO.inspect ["checking pid of room", self]
         {:ok, socket}
     end
     def join("room:"<> _private_room_id, _params, _socket) do
@@ -22,7 +20,6 @@ defmodule HelloWeb.RoomChannel do
        userName = payload["username"]
        usersToSub = payload["usersToSub"] # A list of usernames
        GenServer.call(:server, {:subscribe, usersToSub, userName})
-       IO.inspect ["subscribed", userName]
        push socket, "subscribed",  %{"userName" => userName}
        {:reply, :subscribed, socket}
     end
@@ -32,18 +29,6 @@ defmodule HelloWeb.RoomChannel do
       userName = payload["username"]
       tweet_time =  payload["time"]
       event = "tweet_subscribers"
-      # IO.inspect ["====== TWEET ACTR", self(), :ets.lookup(:users, self()), Engine.getPid(userName), userName]
-
-      # userName
-      # |> Engine.getPid() # userPid is a pid of socket channel
-      # |> Engine.getFollowers()
-      # |> Enum.filter(fn(pid) ->
-      #     Engine.isLoggedIn(pid) == true
-      #   end)
-      # |> Enum.each(fn(pid) ->
-      #   IO.inspect ["======PID TWEET ACTR", Process.alive?(pid)]
-      #   send pid, %{"tweetText" => tweetText}
-      # end)
 
       GenServer.cast(:server, {:tweet_subscribers, tweet_time, tweetText, userName, event})
       {:noreply, socket}
@@ -75,9 +60,11 @@ defmodule HelloWeb.RoomChannel do
 
     def handle_in("retweet", params, socket) do
       userName = params["username"]
-      hashtagList = params["hashtagList"]
-      time = params["time"]
-      GenServer.cast(:server, {:retweet, userName, hashtagList})
+      # hashtagList = params["hashtagList"]
+      tweetText = params["tweetText"]
+      tweet_time = ""
+      event = "retweet"
+      GenServer.cast(:server, {:tweet_subscribers, tweet_time, tweetText, userName, event})
       {:noreply, socket}
     end
 
@@ -104,8 +91,8 @@ defmodule HelloWeb.RoomChannel do
     end
 
     # This is for sending normal tweets
-    def handle_info(msg, socket) do
-      push socket, "tweet_sub", msg
+    def handle_info(tweetText, socket) do
+      push socket, "tweet_sub", tweetText
       {:noreply, socket}
     end
 end

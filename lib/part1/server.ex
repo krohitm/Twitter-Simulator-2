@@ -46,9 +46,10 @@ defmodule Server do
   end
   # handle_cast to subscribe user/client to another user/client
   def handle_call({:subscribe, usersToSub, uName}, clientPid, state) do
-    {clientPid, _} = clientPid
+    #{clientPid, _} = clientPid
     # socket = Engine.getPid(uName)
     # usersToSub is a list of pid's
+    clientPid = Engine.getPid(uName)
     usersToSub |> Enum.each(fn(userName)->
       userPid = Engine.getPid(userName) #userPid is a socket
       Engine.subscribe(clientPid, userPid)
