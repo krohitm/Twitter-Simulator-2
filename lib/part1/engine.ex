@@ -151,8 +151,12 @@ defmodule Engine do
   """
   # @spec getFollowing(pid) :: list
   def getFollowing(clientPid) do
-    [{_, peopleIFollow}] = :ets.lookup(:following, clientPid)
-    peopleIFollow
+    cond do
+      :ets.member(:following, clientPid) ->
+        [{_, peopleIFollow}] = :ets.lookup(:following, clientPid)
+        peopleIFollow
+      true -> []
+      end
   end
 
   @doc """

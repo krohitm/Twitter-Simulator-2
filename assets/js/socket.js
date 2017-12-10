@@ -10,7 +10,7 @@ import {Socket} from "phoenix"
 var numClients
 var channelsList = []
 var socketsList = []
-let maxClients = 3
+let maxClients = 100
 let userFollowers = {}
 let userNamesList = []
 let userName
@@ -189,7 +189,7 @@ for (let channel of channelsList){
 for (let channel of channelsList){
   channel.on("search_hashtag", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search hashtag: [${Date()}] ${payload.searched_hashtag}`
+    messageItem.innerText = `search hashtag: [${Date()}] ${payload.searched_tweet}`
     messageContainer.appendChild(messageItem)
   })
 }
@@ -199,7 +199,7 @@ for (let channel of channelsList){
 for (let channel of channelsList){
   channel.on("search_mentions", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search mentions: [${Date()}] ${payload.search_mentions}`
+    messageItem.innerText = `search mentions: [${Date()}] ${payload.searched_tweet}`
     messageContainer.appendChild(messageItem)
   })
 }
