@@ -37,6 +37,7 @@ function register(userName){
 function subscribe(user, subscribersList) {
     channel.push("subscribe", {username: user, usersToSub: subscribersList})
     .receive("subscribed", resp => console.log("subscribed", user))
+    console.log({username: user, usersToSub: subscribersList})
 }
 
 /**function to send tweets */
@@ -44,6 +45,8 @@ function subscribe(user, subscribersList) {
  function sendTweet(tweetText, username){
    channel.push("tweet_subscribers", {tweetText: tweetText,
     username: username, time: `${Date()}`})
+    console.log( {tweetText: tweetText,
+        username: username, time: `${Date()}`})
  }
 
 
@@ -97,6 +100,7 @@ sendtweet.addEventListener("keypress", event => {
  * users you have subscribed to*/
  document.getElementById('search_user_tweets').onclick = function () {
      //var val = document.getElementById('search_user_tweets').value
+     console.log({username: username.value, time: `${Date()}`})
      channel.push("search", {username: username.value, time: `${Date()}`})
     }
 
@@ -104,6 +108,7 @@ sendtweet.addEventListener("keypress", event => {
 search_hashtag.addEventListener("keypress", event => {
     if (event.keyCode === 13){
         channel.push("search_hashtag", {username: username.value, hashtagList: [search_hashtag.value], time: `${Date()}`})
+        console.log({username: username.value, hashtagList: [search_hashtag.value], time: `${Date()}`})
         search_hashtag.value = ""
     }
   })
@@ -161,6 +166,7 @@ channel.on("search_hashtag", payload => {
 /**event listener to receive tweets for 
  * mentions searched by this user */
 channel.on("search_mentions", payload => {
+    console.log(payload.searched_tweet)
     let messageItem = document.createElement("li");
     messageItem.innerText = `search mentions: [${Date()}] ${payload.searched_tweet}`
     messageContainer.appendChild(messageItem)
