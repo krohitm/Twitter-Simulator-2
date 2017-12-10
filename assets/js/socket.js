@@ -10,7 +10,7 @@ import {Socket} from "phoenix"
 var numClients
 var channelsList = []
 var socketsList = []
-let maxClients = 1000
+let maxClients = 100
 let userFollowers = {}
 let userNamesList = []
 let userName
@@ -67,16 +67,6 @@ function subscribe() {
   }
 
    var clientssubscribed= 0
-  // for (let channel of channelsList){
-  //   channel.on("subscribed", payload => {
-  //     clientssubscribed++
-
-  //     if (clientssubscribed === maxClients){
-  //       console.log("clients subscribed", clientssubscribed)
-  //       simulation()
-  //     }
-  //   })
-  // }
 
   for (var i = 0; i<maxClients; i++){
     channelsList[i].on("subscribed", payload => {
@@ -92,7 +82,7 @@ function subscribe() {
 
 /**function to send tweets */
 
- function sendTweet(minInterval, i){
+ function sendTweet(i){
    console.log("sending tweets")
    var numUsers = userNamesList.length
    var mention, tweetText, numSubscribers, interval
@@ -102,26 +92,28 @@ function subscribe() {
      tweetText = "tweet@"+mention+getHashtag()
      console.log(tweetText)
      numSubscribers = userFollowers[userNamesList[i]].len
-     interval = Math.floor(maxClients/numSubscribers) * minInterval
+     //interval = Math.floor(maxClients/numSubscribers) * minInterval
 
      channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
        username: userNamesList[i], time: `${Date()}`})
    //}
  }
 
+var clearCounter = 0
 
 var check = 0
 function simulation(){
   console.log("simulation started")
-  while (check <= 3){
+  while (true){
     for (var i = 0; i < userNamesList.length; i++){
       //sendTweet(10, i)
       //console.log("checking behavior")
-      var runBehavior = getRandom(["send_tweet","search", "search_hashtag", "search_mentions", "retweet"], 1)
+      //if(clearCounter%1000 == 0) messageContainer.innerHTML = ""
+      var runBehavior = getRandom(["send_tweet","search", "search_hashtag", "search_mentions"], 1)
       switch (runBehavior[0]){
         case("send_tweet"):
         console.log("sending tweet", userNamesList[i])
-        sendTweet(10, i)
+        sendTweet(i)
         case("search"):
         console.log("searching", userNamesList[i])
         channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})
@@ -135,16 +127,17 @@ function simulation(){
         console.log("searching for mentions", userNamesList[i])
         channelsList[i].push("search_mentions", {username: userNamesList[i], time: `${Date()}`})
         break
-        case("retweet"):
-        console.log("retweeting", userNamesList[i])
-        var hashtagList = [getHashtag()]
-        channelsList[i].push("retweet", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
-        break
+        // case("retweet"):
+        // console.log("retweeting", userNamesList[i])
+        // var hashtagList = [getHashtag()]
+        // channelsList[i].push("retweet", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
+        // break
         default:
         break
       }
+      clearCounter++
     }
-    check += 1
+    //check += 1
   }
 }
 
