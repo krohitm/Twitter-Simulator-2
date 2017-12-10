@@ -50,10 +50,12 @@ defmodule HelloWeb.RoomChannel do
     end
 
     def handle_in("search", params, socket) do
+        IO.inspect "--------------searching"
         {:noreply, socket}
     end
 
     def handle_in("search_hashtag", params, socket) do
+        IO.inspect "--------------searching hashtag"
         {:noreply, socket}
     end
 

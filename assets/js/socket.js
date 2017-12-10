@@ -38,7 +38,7 @@ function register(){
   
     //register the new client
     channel.push("register", userName)
-    .receive == "registered" , resp => console.log("Joined successfully", resp)
+    .receive("registered" , resp => console.log("registered", resp))
 
     // channel.push("register", userName)
     // .receive("registered", resp => console.log("registered", resp))
@@ -46,9 +46,6 @@ function register(){
 
   for (let channel of channelsList){
     channel.on("registered", payload => {
-      //let messageItem = document.createElement("li");
-      //messageItem.innerText = `Tweeted [${Date()}] ${payload.tweetText}`
-      //messageContainer.appendChild(messageItem)
       clientsProcessed++
 
       if (clientsProcessed === maxClients){
@@ -77,6 +74,7 @@ function subscribe() {
       clientsProcessed++
 
       if (clientsProcessed === maxClients){
+        console.log("clients subscribed", clientsProcessed)
         simulation()
       }
     })
@@ -85,12 +83,12 @@ function subscribe() {
 
 /**function to send tweets */
 
- function sendTweet(minInterval){
+ function sendTweet(minInterval, i){
    console.log("sending tweets")
    var numUsers = userNamesList.length
    var mention, tweetText, numSubscribers, interval
  
-   for (var i = 0; i < numUsers; i++){
+   //for (var i = 0; i < numUsers; i++){
      mention = getRandom(userNamesList, 1)
      tweetText = "tweet@"+mention+getHashtag()
      console.log(tweetText)
@@ -99,7 +97,7 @@ function subscribe() {
  
      channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
        username: userNamesList[i], time: `${Date()}`})
-   }
+   //}
  }
 
 
@@ -107,21 +105,21 @@ var check = 0
 function simulation(){
   while (check <= 1){
     for (var i = 0; i < userNamesList.length; i++){
-      sendTweet(10)
+      sendTweet(10, i)
       //console.log("checking behavior")
-      var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
+      var runBehavior = "search_hashtag"//getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
       switch (runBehavior[0]){
         case("search"):
         console.log("searching", userNamesList[i])
         channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})
         break
-        case("search_hashtag", userNamesList[i]):
-        console.log("searching for hashtag")
+        case("search_hashtag"):
+        console.log("searching for hashtag", userNamesList[i])
         hashtagList = [getHashtag]
         channelsList[i].push("search_hashtag", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
         break
-        case("search_mentions", userNamesList[i]):
-        console.log("searching for mentions")
+        case("search_mentions"):
+        console.log("searching for mentions", userNamesList[i])
         channelsList[i].push("search_mentions", {username: userNamesList[i], time: `${Date()}`})
         break
         case("retweet"):
@@ -152,14 +150,22 @@ function simulation(){
     chatInput.value = ""
   }
 })*/
+
+/////////////////////////////////////////////////////////////////////////////
+//EVENT LISTENERS BELOW THIS
+
+/**event listener to receive tweet from 
+ * the user this user has subscribed to*/
 for (let channel of channelsList){
   channel.on("tweet_sub", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `Tweeted [${Date()}] ${payload.tweetText}`
+    messageItem.innerText = `Tweeted: [${Date()}] ${payload.tweetText}`
     messageContainer.appendChild(messageItem)
   })
 }
 
+/**even listener to receive search results as tweets from a 
+ * paticular user who's tweet are searched for */
 for (let channel of channelsList){
   channel.on("search_result", payload => {
     let messageItem = document.createElement("li");
@@ -168,30 +174,29 @@ for (let channel of channelsList){
   })
 }
 
+/**event listener to receive tweets for a particular 
+ * hashtag searched for by this user */
 for (let channel of channelsList){
   channel.on("search_hashtag", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search result: [${Date()}] ${payload.searched_hashtag}`
+    messageItem.innerText = `search hashtag: [${Date()}] ${payload.searched_hashtag}`
     messageContainer.appendChild(messageItem)
   })
 }
 
+/**event listener to receive tweets for 
+ * mentions searched by this user */
 for (let channel of channelsList){
   channel.on("search_mentions", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search result: [${Date()}] ${payload.search_mentions}`
+    messageItem.innerText = `search mentions: [${Date()}] ${payload.search_mentions}`
     messageContainer.appendChild(messageItem)
   })
 }
-/*channelsList[0].on("tweet_sub", payload => {
-  let messageItem = document.createElement("li");
-  messageItem.innerText = `[${Date()}] ${payload.tweetText}`//'[${Date()}] ${payload.body}'
-  messageContainer.appendChild(messageItem)
-})*/
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-/**All helper functions below this */
-
+/**ALL HELPER FUNCTIONS BELOW THIS */
 
 /** function to get random subscribers*/
 function getRandom(arr, n, i) {
