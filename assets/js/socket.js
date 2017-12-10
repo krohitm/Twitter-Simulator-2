@@ -86,7 +86,29 @@ setTimeout(() => {
   }
 }, 4000)
 
+setTimeout(() => {
+  var numUsers = userNamesList.length
+  var mention, tweetText, numSubscribers, interval
+
+  for (var i = 0; i < numUsers; i++){
+    mention = getRandom(userNamesList, 1)
+    tweetText = "tweet@"+mention+getHashtag()
+    console.log(tweetText)
+    numSubscribers = userFollowers[userNamesList[i]].len
+    // interval = Math.floor(maxClients/numSubscribers) * minInterval
+
+    channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})
+  }
+}, 10000)
+
 channelsList[0].on("tweet_sub", payload => {
+  let messageItem = document.createElement("li");
+  messageItem.innerText = `[${Date()}] ${payload.tweetText}`//'[${Date()}] ${payload.body}'
+  messageContainer.appendChild(messageItem)
+})
+
+channelsList[0].on("search_result", payload => {
+  console.log("search_results")
   let messageItem = document.createElement("li");
   messageItem.innerText = `[${Date()}] ${payload.tweetText}`//'[${Date()}] ${payload.body}'
   messageContainer.appendChild(messageItem)

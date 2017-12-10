@@ -48,6 +48,9 @@ defmodule HelloWeb.RoomChannel do
     end
 
     def handle_in("search", params, socket) do
+        userName = params["username"]
+        requestTime = params["time"]
+        GenServer.cast(:server, {:search, userName, requestTime})
         {:noreply, socket}
     end
 
@@ -83,8 +86,13 @@ defmodule HelloWeb.RoomChannel do
         {:noreply, socket}
     end
 
+    def handle_info({:search_result, tweet_list}, socket) do
+      push socket, "search_result", %{"searched_tweet" => tweet_list}
+      {:noreply, socket}
+    end
+
     def handle_info(msg, socket) do
-      broadcast socket, "tweet_sub", msg
+      push socket, "tweet_sub", msg
       {:noreply, socket}
     end
 end

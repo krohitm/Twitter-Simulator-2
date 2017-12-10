@@ -15,10 +15,11 @@ defmodule ReadTweets do
       tweet_list = Engine.getTweets(person_i_follow)
         # tweet -> [tweet_id, tweetText]
         # TODO turns into just a list of tweetTexts after sorting
-      GenServer.cast(clientId, {:search_result, tweet_list})
+      # GenServer.cast(clientId, {:search_result, tweet_list})
+      send clientId, {:search_result, tweet_list |> Enum.at(1)}
     end)
-    IO.inspect ["search processing time for tweet num #{request_hitcount}", :os.system_time(:milli_seconds) - requestTime]
-    
+    # IO.inspect ["search processing time for tweet num #{request_hitcount}", :os.system_time(:milli_seconds) - requestTime]
+
     {:noreply, state}
   end
 
