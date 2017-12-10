@@ -57,7 +57,13 @@ defmodule HelloWeb.RoomChannel do
     end
 
     def handle_in("search_hashtag", params, socket) do
-        {:noreply, socket}
+      #{username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`}
+      IO.inspect ["--------------------------------"]
+      userName = params["username"]
+      hashtagList = params["hashtagList"]
+      time = params["time"]
+      GenServer.cast(:server, {:search_hashtag, userName, hashtagList})
+      {:noreply, socket}
     end
 
     def handle_in("search_mentions", params, socket) do
@@ -88,8 +94,14 @@ defmodule HelloWeb.RoomChannel do
         {:noreply, socket}
     end
 
-    def handle_info({:search_result, tweet_list}, socket) do
-      push socket, "search_result", %{"searched_tweet" => tweet_list}
+    def handle_info({:search_result, tweetText}, socket) do
+      push socket, "search_result", %{"searched_tweet" => tweetText}
+      {:noreply, socket}
+    end
+
+    def handle_info({:search_result_ht, tweetText}, socket) do
+      IO.inspect ["search hasth --------------", tweetText]
+      push socket, "search_hashtag", %{"searched_tweet" => tweetText}
       {:noreply, socket}
     end
 

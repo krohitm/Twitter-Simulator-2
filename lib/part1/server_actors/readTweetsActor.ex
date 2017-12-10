@@ -16,7 +16,9 @@ defmodule ReadTweets do
         # tweet -> [tweet_id, tweetText]
         # TODO turns into just a list of tweetTexts after sorting
       # GenServer.cast(clientId, {:search_result, tweet_list})
-      send clientId, {:search_result, tweet_list |> Enum.at(1)}
+      tweet_list |> Enum.each(fn(tweet) ->
+        send clientId, {:search_result, tweet |> Enum.at(1)}
+      end)
     end)
     # IO.inspect ["search processing time for tweet num #{request_hitcount}", :os.system_time(:milli_seconds) - requestTime]
 

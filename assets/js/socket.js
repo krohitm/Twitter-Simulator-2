@@ -85,12 +85,12 @@ function subscribe() {
 
 /**function to send tweets */
 
- function sendTweet(minInterval){
+ function sendTweet(minInterval, i){
    console.log("sending tweets")
    var numUsers = userNamesList.length
    var mention, tweetText, numSubscribers, interval
 
-   for (var i = 0; i < numUsers; i++){
+   //for (var i = 0; i < 3; i++){
      mention = getRandom(userNamesList, 1)
      tweetText = "tweet@"+mention+getHashtag()
      console.log(tweetText)
@@ -99,7 +99,7 @@ function subscribe() {
 
      channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
        username: userNamesList[i], time: `${Date()}`})
-   }
+   //}
  }
 
 
@@ -107,21 +107,22 @@ var check = 0
 function simulation(){
   while (check <= 1){
     for (var i = 0; i < userNamesList.length; i++){
-      sendTweet(10)
+      sendTweet(10, i)
       //console.log("checking behavior")
-      var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
+      var runBehavior ="search_hashtag" //getRandom(["search_hashtag"], 1)//, "search_hashtag", "search_mentions", "retweet"], 1)
+      console.log(runBehavior)
       switch (runBehavior[0]){
         case("search"):
         console.log("searching", userNamesList[i])
         channelsList[i].push("search", {username: userNamesList[i], time: `${Date()}`})
         break
-        case("search_hashtag", userNamesList[i]):
-        console.log("searching for hashtag")
+        case("search_hashtag"):
+        console.log("searching for hashtag" , userNamesList[i])
         hashtagList = [getHashtag]
         channelsList[i].push("search_hashtag", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
         break
-        case("search_mentions", userNamesList[i]):
-        console.log("searching for mentions")
+        case("search_mentions"):
+        console.log("searching for mentions" , userNamesList[i])
         channelsList[i].push("search_mentions", {username: userNamesList[i], time: `${Date()}`})
         break
         case("retweet"):
@@ -171,7 +172,7 @@ for (let channel of channelsList){
 for (let channel of channelsList){
   channel.on("search_hashtag", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search result: [${Date()}] ${payload.searched_hashtag}`
+    messageItem.innerText = `search hashtag: [${Date()}] ${payload.searched_hashtag}`
     messageContainer.appendChild(messageItem)
   })
 }
@@ -179,7 +180,7 @@ for (let channel of channelsList){
 for (let channel of channelsList){
   channel.on("search_mentions", payload => {
     let messageItem = document.createElement("li");
-    messageItem.innerText = `search result: [${Date()}] ${payload.search_mentions}`
+    messageItem.innerText = `search mentions: [${Date()}] ${payload.search_mentions}`
     messageContainer.appendChild(messageItem)
   })
 }
