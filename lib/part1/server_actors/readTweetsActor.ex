@@ -36,7 +36,8 @@ defmodule ReadTweets do
       |> Enum.each(fn(tweet) ->
         # tweet -> [tweet_id, tweetText]
         # TODO turns into just a list of tweetTexts after sorting
-        GenServer.cast(clientId, {:search_result_ht, Enum.at(tweet, 1)})
+        # GenServer.cast(clientId, {:search_result_ht, Enum.at(tweet, 1)})
+        send clientId, {:search_result_ht, Enum.at(tweet, 1)}
       end)
     end)
     {:noreply, state}
@@ -51,7 +52,8 @@ defmodule ReadTweets do
     clientId |> Engine.getMentions() |> Enum.each(fn(tweet) ->
       # tweet -> [tweet_id, tweetText]
       # TODO turns into just a list of tweetTexts after sorting
-      GenServer.cast(clientId, {:search_result_mention, Enum.at(tweet, 1)})
+      # GenServer.cast(clientId, {:search_result_mention, Enum.at(tweet, 1)})
+      send clientId, {:search_result_mn, Enum.at(tweet, 1)}
     end)
     {:noreply, state}
   end
@@ -64,7 +66,10 @@ defmodule ReadTweets do
     Enum.each(hashtag_list, fn(hashtag)->
       tweet_list = String.replace(hashtag, "#", "")
       |> Engine.getTweetsHavingHashtag
-        GenServer.cast(clientId, {:retweet, userName, tweet_list})
+        # GenServer.cast(clientId, {:retweet, userName, tweet_list})
+      |>  Enum.each(fn(tweet)->
+        send clientId, {:retweet, userName, Enum.at(tweet, 1)}
+      end)
     end)
     {:noreply, state}
   end
