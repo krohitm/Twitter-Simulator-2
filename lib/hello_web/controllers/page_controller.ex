@@ -7,5 +7,5 @@ defmodule HelloWeb.PageController do
 
   def paajiRohit(conn, _params) do
     render conn, "error.html"
-  end 
+  end
 end

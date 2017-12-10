@@ -14,66 +14,116 @@ let maxClients = 3
 let userFollowers = {}
 let userNamesList = []
 let userName
-for (numClients = 0; numClients < maxClients; numClients++){
-  userName = "user_"+numClients
-  let socket = new Socket("/socket", {params: {token: window.userToken, userName: userName}})
-  userNamesList[numClients] = userName
-  userFollowers[userName] = []
-  socket.connect()
-  socketsList[numClients] = socket
-  let channel = socket.channel("room:lobby", {})
-  channelsList[numClients] = channel
+let messageContainer = document.querySelector('#messages')
+var clientsProcessed = 0
 
-  //join the new client
-  channel.join()
-  .receive("ok", resp => { console.log("Joined successfully", resp) })
-  .receive("error", resp => { console.log("Unable to join", resp) })
+function register(){
+  for (numClients = 0; numClients < maxClients; numClients++){
+    userName = "user_"+numClients
+    let socket = new Socket("/socket", {params: {token: window.userToken, userName: userName}})
+    userNamesList[numClients] = userName
+    userFollowers[userName] = []
+    socket.connect()
+    socketsList[numClients] = socket
+    let channel = socket.channel("room:lobby", {})
+    channelsList[numClients] = channel
+  
+    //join the new client
+    channel.join()
+    .receive("ok", resp => { console.log("Joined successfully", resp) })
+    .receive("error", resp => { console.log("Unable to join", resp) })
+  
+    //register the new client
+    channel.push("register", userName)
+    .receive == "registered" , resp => console.log("Joined successfully", resp)
 
-  //register the new client
-  channel.push("register", userName)
-  .receive("registered", resp => console.log("registered", resp))
+    // channel.push("register", userName)
+    // .receive("registered", resp => console.log("registered", resp))
+  }
+
+  for (let channel of channelsList){
+    channel.on("registered", payload => {
+      //let messageItem = document.createElement("li");
+      //messageItem.innerText = `Tweeted [${Date()}] ${payload.tweetText}`
+      //messageContainer.appendChild(messageItem)
+      clientsProcessed++
+
+      if (clientsProcessed === maxClients){
+        subscribe()
+      }
+    })
+  }
 }
 
+register()
 
 //give subscribers to each client
-setTimeout(() => {
+function subscribe() {
   var numSubscribers, subscribersList;
-  for (var i = 0; i < maxClients; i++){
-    numSubscribers = Math.floor((maxClients-2)/(i+1)) //following zipf distribution
+  for (numClients = 0; numClients < maxClients; numClients++){
+    numSubscribers = Math.floor((maxClients-2)/(numClients+1)) //following zipf distribution
     if (numSubscribers == 0){
       numSubscribers = 1
     }
-    subscribersList = getRandom(userNamesList, numSubscribers, i)
-    channelsList[i].push("subscribe", {username: userNamesList[i], usersToSub: subscribersList})
+    subscribersList = getRandom(userNamesList, numSubscribers)
+    channelsList[numClients].push("subscribe", {username: userNamesList[numClients], usersToSub: subscribersList})
     .receive("subscribed", resp => console.log("subscribed", resp))
   }
-  //setTimeout(simulation(), 5000000)
-}, 3000)
 
-/**function to send tweets */
-function sendTweet(minInterval){
-  console.log("sending tweets")
-  var numUsers = userNamesList.length
-  var mention, tweetText, numSubscribers, interval
+  clientsProcessed = 0
+  for (let channel of channelsList){
+    channel.on("subscribed", payload => {
+      clientsProcessed++
 
-  for (var i = 0; i < numUsers; i++){
-    mention = getRandom(userNamesList, 1)
-    tweetText = "tweet@"+mention+getHashtag()
-    console.log(tweetText)
-    numSubscribers = userFollowers[userNamesList[i]].len
-    interval = Math.floor(maxClients/numSubscribers) * minInterval
-
-    channelsList[i].push("tweet_subscribers", {tweetText: tweetText, 
-      username: userNamesList[i], time: `${Date()}`})
+      if (clientsProcessed === maxClients){
+        simulation()
+      }
+    })
   }
 }
+
+/**function to send tweets */
+
+ function sendTweet(minInterval){
+   console.log("sending tweets")
+   var numUsers = userNamesList.length
+   var mention, tweetText, numSubscribers, interval
+ 
+   for (var i = 0; i < numUsers; i++){
+     mention = getRandom(userNamesList, 1)
+     tweetText = "tweet@"+mention+getHashtag()
+     console.log(tweetText)
+     numSubscribers = userFollowers[userNamesList[i]].len
+     interval = Math.floor(maxClients/numSubscribers) * minInterval
+ 
+     channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
+       username: userNamesList[i], time: `${Date()}`})
+   }
+ }
+
+// setTimeout(() => {
+//   console.log("sending tweets")
+//   var numUsers = userNamesList.length
+//   var mention, tweetText, numSubscribers, interval
+
+//   for (var i = 0; i < numUsers; i++){
+//     mention = getRandom(userNamesList, 1)
+//     tweetText = "tweet@"+mention+getHashtag()
+//     console.log(tweetText)
+//     numSubscribers = userFollowers[userNamesList[i]].len
+//     // interval = Math.floor(maxClients/numSubscribers) * minInterval
+
+//     channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
+//       username: userNamesList[i], time: `${Date()}`})
+//   }
+// }, 5000)
 
 
 var check = 0
 function simulation(){
   while (check <= 1){
     for (var i = 0; i < userNamesList.length; i++){
-      setInterval(sendTweet(10), 2)
+      sendTweet(10), 2
       //console.log("checking behavior")
       var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
       switch (runBehavior[0]){
@@ -103,11 +153,14 @@ function simulation(){
   }
 }
 
+//setTimeout(simulation(), 10000)
+
+
 //window.setTimeout(simulation(), 5000000000)
 
 //let channel = socket.channel("room:lobby", {})
 //let chatInput = document.querySelector('#chat-input')
-let messageContainer = document.querySelector('#messages')
+//et messageContainer = document.querySelector('#messages')
 
 /*chatInput.addEventListener("keypress", event => {
   if (event.keyCode === 13){
@@ -115,8 +168,15 @@ let messageContainer = document.querySelector('#messages')
     chatInput.value = ""
   }
 })*/
+for (let channel of channelsList){
+  channel.on("tweet_sub", payload => {
+    let messageItem = document.createElement("li");
+    messageItem.innerText = `Tweeted [${Date()}] ${payload.tweetText}`
+    messageContainer.appendChild(messageItem)
+  })
+}
 
-/*channelsList[0].on("tweet_subscribers", payload => {
+/*channelsList[0].on("tweet_sub", payload => {
   let messageItem = document.createElement("li");
   messageItem.innerText = `[${Date()}] ${payload.tweetText}`//'[${Date()}] ${payload.body}'
   messageContainer.appendChild(messageItem)
