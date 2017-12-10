@@ -21,8 +21,8 @@ defmodule HelloWeb.RoomChannel do
     def handle_in("subscribe", payload, socket) do
        userName = payload["username"]
        usersToSub = payload["usersToSub"] # A list of usernames
-       IO.inspect ["subscribed", usersToSub]
        GenServer.call(:server, {:subscribe, usersToSub, userName})
+       IO.inspect ["subscribed", userName]
        push socket, "subscribed",  %{"userName" => userName}
        {:reply, :subscribed, socket}
     end
@@ -50,13 +50,20 @@ defmodule HelloWeb.RoomChannel do
     end
 
     def handle_in("search", params, socket) do
-        IO.inspect "--------------searching"
+        userName = params["username"]
+        requestTime = params["time"]
+        GenServer.cast(:server, {:search, userName, requestTime})
         {:noreply, socket}
     end
 
     def handle_in("search_hashtag", params, socket) do
-        IO.inspect "--------------searching hashtag"
-        {:noreply, socket}
+      #{username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`}
+      IO.inspect ["--------------------------------"]
+      userName = params["username"]
+      hashtagList = params["hashtagList"]
+      time = params["time"]
+      GenServer.cast(:server, {:search_hashtag, userName, hashtagList})
+      {:noreply, socket}
     end
 
     def handle_in("search_mentions", params, socket) do
@@ -70,21 +77,15 @@ defmodule HelloWeb.RoomChannel do
        {:noreply, socket}
     end
 
-    def handle_in("new_msg",payload, socket) do
-      #pass event as string to GenServer
-      #tweet_time = 1
-      #tweetText = %{"body" => body}
-      #event = "new_msg"
-      #userName = "aditya"
-      #GenServer.cast(:server, {:tweet_subscribers, tweet_time, tweetText, userName, event})
-        # Engine.register(socket, "user_name")
-        # IO.inspect ["Inspecting db", socket, Engine.getFollowers(socket)]
-        username = payload["username"]
-        IO.inspect ["Inspecting body",  username]
-        broadcast! socket, "new_msg", payload
+    def handle_info({:search_result, tweetText}, socket) do
+      push socket, "search_result", %{"searched_tweet" => tweetText}
+      {:noreply, socket}
+    end
 
-        # IO.inspect[Engine.getFollowers(socket)>>>>>>> Stashed changes
-        {:noreply, socket}
+    def handle_info({:search_result_ht, tweetText}, socket) do
+      IO.inspect ["search hasth --------------", tweetText]
+      push socket, "search_hashtag", %{"searched_tweet" => tweetText}
+      {:noreply, socket}
     end
 
     def handle_info(msg, socket) do

@@ -30,18 +30,15 @@ function register(){
     socketsList[numClients] = socket
     let channel = socket.channel("room:lobby", {})
     channelsList[numClients] = channel
-  
+
     //join the new client
     channel.join()
-    .receive("ok", resp => { console.log("Joined successfully", resp) })
-    .receive("error", resp => { console.log("Unable to join", resp) })
-  
+    //.receive("ok", resp => { console.log("Joined successfully", resp) })
+    //.receive("error", resp => { console.log("Unable to join", resp) })
+
     //register the new client
     channel.push("register", userName)
     .receive("registered" , resp => console.log("registered", resp))
-
-    // channel.push("register", userName)
-    // .receive("registered", resp => console.log("registered", resp))
   }
 
   for (let channel of channelsList){
@@ -64,17 +61,29 @@ function subscribe() {
       numSubscribers = 1
     }
     subscribersList = getRandom(userNamesList, numSubscribers)
-    channelsList[numClients].push("subscribe", {username: userNamesList[numClients], usersToSub: subscribersList})
-    .receive("subscribed", resp => console.log("subscribed", resp))
+    var user = userNamesList[numClients]
+    channelsList[numClients].push("subscribe", {username: user, usersToSub: subscribersList})
+    .receive("subscribed", resp => console.log("subscribed", user))
   }
 
-  clientsProcessed = 0
-  for (let channel of channelsList){
-    channel.on("subscribed", payload => {
-      clientsProcessed++
+   var clientssubscribed= 0
+  // for (let channel of channelsList){
+  //   channel.on("subscribed", payload => {
+  //     clientssubscribed++
 
-      if (clientsProcessed === maxClients){
-        console.log("clients subscribed", clientsProcessed)
+  //     if (clientssubscribed === maxClients){
+  //       console.log("clients subscribed", clientssubscribed)
+  //       simulation()
+  //     }
+  //   })
+  // }
+
+  for (var i = 0; i<maxClients; i++){
+    channelsList[i].on("subscribed", payload => {
+      clientssubscribed++
+      console.log("subscribed", clientssubscribed)
+
+      if (clientssubscribed === maxClients){
         simulation()
       }
     })
@@ -94,7 +103,7 @@ function subscribe() {
      console.log(tweetText)
      numSubscribers = userFollowers[userNamesList[i]].len
      interval = Math.floor(maxClients/numSubscribers) * minInterval
- 
+
      channelsList[i].push("tweet_subscribers", {tweetText: tweetText,
        username: userNamesList[i], time: `${Date()}`})
    //}
@@ -103,11 +112,12 @@ function subscribe() {
 
 var check = 0
 function simulation(){
-  while (check <= 1){
+  console.log("simulation started")
+  while (check <= 3){
     for (var i = 0; i < userNamesList.length; i++){
       sendTweet(10, i)
       //console.log("checking behavior")
-      var runBehavior = "search_hashtag"//getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
+      var runBehavior = getRandom(["search", "search_hashtag", "search_mentions", "retweet"], 1)
       switch (runBehavior[0]){
         case("search"):
         console.log("searching", userNamesList[i])
@@ -115,7 +125,7 @@ function simulation(){
         break
         case("search_hashtag"):
         console.log("searching for hashtag", userNamesList[i])
-        hashtagList = [getHashtag]
+        var hashtagList = [getHashtag()]
         channelsList[i].push("search_hashtag", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
         break
         case("search_mentions"):
@@ -124,7 +134,7 @@ function simulation(){
         break
         case("retweet"):
         console.log("retweeting", userNamesList[i])
-        var hashtagList = [getHashtag]
+        var hashtagList = [getHashtag()]
         channelsList[i].push("retweet", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
         break
         default:
