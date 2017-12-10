@@ -67,14 +67,18 @@ defmodule HelloWeb.RoomChannel do
     end
 
     def handle_in("search_mentions", params, socket) do
-        {:noreply, socket}
+      userName = params["username"]
+      time = params["time"]
+      GenServer.cast(:server, {:search_mentions, userName})
+      {:noreply, socket}
     end
 
     def handle_in("retweet", params, socket) do
-    # def handle_in("register", %{"body" => body}, socket) do
-    #
-    #   GenServer.call(:server, {:register, userName, socket})
-       {:noreply, socket}
+      userName = params["username"]
+      hashtagList = params["hashtagList"]
+      time = params["time"]
+      GenServer.cast(:server, {:retweet, userName, hashtagList})
+      {:noreply, socket}
     end
 
     def handle_in("new_msg",payload, socket) do
@@ -105,6 +109,18 @@ defmodule HelloWeb.RoomChannel do
       {:noreply, socket}
     end
 
+    def handle_info({:search_result_mn, tweetText}, socket) do
+      IO.inspect ["search hast MN --------------", tweetText]
+      push socket, "search_mentions", %{"searched_tweet" => tweetText}
+      {:noreply, socket}
+    end
+
+    def handle_info({:retweet, userName, tweetText}, socket) do
+      push socket, "search_retweet", %{"searched_tweet" => tweetText}
+      {:noreply, socket}
+    end
+
+    # This is for sending normal tweets
     def handle_info(msg, socket) do
       push socket, "tweet_sub", msg
       {:noreply, socket}
