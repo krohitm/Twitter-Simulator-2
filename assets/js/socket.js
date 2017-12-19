@@ -10,7 +10,7 @@ import {Socket} from "phoenix"
 var numClients
 var channelsList = []
 var socketsList = []
-let maxClients = 100
+let maxClients = 1000
 let userFollowers = {}
 let userNamesList = []
 let userName
@@ -33,8 +33,8 @@ function register(){
 
     //join the new client
     channel.join()
-    //.receive("ok", resp => { console.log("Joined successfully", resp) })
-    //.receive("error", resp => { console.log("Unable to join", resp) })
+    .receive("ok", resp => { console.log("Joined successfully", resp) })
+    .receive("error", resp => { console.log("Unable to join", resp) })
 
     //register the new client
     channel.push("register", userName)
@@ -127,11 +127,6 @@ function simulation(){
         console.log("searching for mentions", userNamesList[i])
         channelsList[i].push("search_mentions", {username: userNamesList[i], time: `${Date()}`})
         break
-        // case("retweet"):
-        // console.log("retweeting", userNamesList[i])
-        // var hashtagList = [getHashtag()]
-        // channelsList[i].push("retweet", {username: userNamesList[i], hashtagList: hashtagList, time: `${Date()}`})
-        // break
         default:
         break
       }
@@ -141,21 +136,6 @@ function simulation(){
   }
 }
 
-//setTimeout(simulation(), 10000)
-
-
-//window.setTimeout(simulation(), 5000000000)
-
-//let channel = socket.channel("room:lobby", {})
-//let chatInput = document.querySelector('#chat-input')
-//et messageContainer = document.querySelector('#messages')
-
-/*chatInput.addEventListener("keypress", event => {
-  if (event.keyCode === 13){
-    channel.push("new_msg", {body: chatInput.value})
-    chatInput.value = ""
-  }
-})*/
 
 /////////////////////////////////////////////////////////////////////////////
 //EVENT LISTENERS BELOW THIS
